@@ -1,10 +1,13 @@
 package download.butts.blackjack;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -22,6 +25,16 @@ public class MainGameActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         betAmount = intent.getIntExtra(BET_AMOUNT, 0);
+        newGame();
+    }
+
+    private void newGame() {
+        SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
+                getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        int balance = sharedPref.getInt(getString(R.string.pref_balance), 1000);
+        editor.putInt(getString(R.string.pref_balance), balance-betAmount);
+        editor.apply();
         this.theGame = new BlackjackGameManager();
         renderBoard();
     }
@@ -29,7 +42,7 @@ public class MainGameActivity extends AppCompatActivity {
     public void renderBoard() {
 
         TextView test = (TextView) findViewById(R.id.textView);
-        String dealerText = "";
+        String dealerText;
         if (theGame.gameOver) {
             dealerText = String.format("Dealer's hand:\n %s (%s)", Card.renderStack(theGame.dealerHand), theGame.dealerTotal);
         } else {
@@ -41,10 +54,13 @@ public class MainGameActivity extends AppCompatActivity {
         Button stayBtn = (Button) findViewById(R.id.stayBtn);
         if (theGame.gameOver) {
             hitBtn.setEnabled(false);
-            doubleDownBtn.setEnabled(false);
+            doubleDownBtn.setEnabled(true);
+            doubleDownBtn.setText("End Game");
             stayBtn.setEnabled(true);
-            stayBtn.setText("End Game");
+            stayBtn.setText("Play Again");
         } else {
+            doubleDownBtn.setText(R.string.double_down_btn);
+            stayBtn.setText(R.string.stay_btn);
             hitBtn.setEnabled(!theGame.playerBusted);
             doubleDownBtn.setEnabled(theGame.playerHand.size() == 2);
             if (theGame.playerTotal == 21) {
@@ -52,6 +68,33 @@ public class MainGameActivity extends AppCompatActivity {
                 doubleDownBtn.setEnabled(false);
             }
         }
+    }
+
+    private void gameEnded(BlackjackGameManager.GameResult result) {
+        SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
+                getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+        int defaultValue = getResources().getInteger(R.integer.pref_balance_default);
+        int balance = sharedPref.getInt(getString(R.string.pref_balance), defaultValue);
+        switch (result) {
+            case Won:
+                balance += 2*betAmount;
+                break;
+            case Lost:
+                //bet was already subtracted from balance
+                //no changes needed
+                break;
+            case Neutral:
+                balance += betAmount;
+                break;
+            case Doubled:
+                balance += 4*betAmount;
+                break;
+        }
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putInt("balance", balance);
+        editor.apply();
+        Toast toast = Toast.makeText(this, result.toString(), Toast.LENGTH_SHORT);
+        toast.show();
     }
 
     public void hitBtnCallback(View view) {
@@ -65,20 +108,22 @@ public class MainGameActivity extends AppCompatActivity {
 
     public void stayBtnCallback(View view) {
         if (theGame.gameOver) {
-            endGame(result);
+            newGame();
         } else {
             result = theGame.stay();
+            gameEnded(result);
             renderBoard();
-            Toast toast = Toast.makeText(this, result.toString(), Toast.LENGTH_SHORT);
-            toast.show();
         }
     }
 
     public void doubleDownBtnCallback(View view) {
-        result = theGame.doubleDown();
-        renderBoard();
-        Toast toast = Toast.makeText(this, result.toString(), Toast.LENGTH_SHORT);
-        toast.show();
+        if (theGame.gameOver) {
+            endGame(result);
+        } else {
+            result = theGame.doubleDown();
+            gameEnded(result);
+            renderBoard();
+        }
     }
 
     public void endGame(BlackjackGameManager.GameResult result) {

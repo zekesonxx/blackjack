@@ -94,11 +94,8 @@ public class BetChooserActivity extends AppCompatActivity {
     }
 
     public void startGame(View view) {
-        SharedPreferences.Editor editor = sharedPref.edit();
         Intent game = new Intent(this, MainGameActivity.class);
         int betAmount = Integer.parseInt(((EditText) findViewById(R.id.bet_amount)).getText().toString());
-        editor.putInt("balance", balance-betAmount);
-        editor.apply();
         game.putExtra(MainGameActivity.BET_AMOUNT, betAmount);
         startActivity(game);
     }

@@ -28,24 +28,6 @@ public class ResultsScreenActivity extends AppCompatActivity {
                 getString(R.string.preference_file_key), Context.MODE_PRIVATE);
         int defaultValue = getResources().getInteger(R.integer.pref_balance_default);
         balance = sharedPref.getInt(getString(R.string.pref_balance), defaultValue);
-        switch (result) {
-            case "Won":
-                balance += 2*betAmount;
-                break;
-            case "Lost":
-                //bet was already subtracted from balance
-                //no changes needed
-                break;
-            case "Neutral":
-                balance += betAmount;
-                break;
-            case "Doubled":
-                balance += 4*betAmount;
-                break;
-        }
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putInt("balance", balance);
-        editor.commit();
     }
 
     @Override
