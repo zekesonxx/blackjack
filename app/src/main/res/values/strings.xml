@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">Blackjack</string>
+
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="place_your_bet">Your Bet:</string>
+    <string name="deal_btn">Deal</string>
+    <string name="title_activity_main_game">MainGameActivity</string>
+    <string name="hit_btn">Hit</string>
+    <string name="stay_btn">Stay</string>
+    <string name="double_down_btn">Double Down</string>
+    <string name="current_balance">Current Balance:</string>
+    <string name="preference_file_key">download.butts.blackjack.SAVEFILE</string>
+    <string name="pref_balance">balance</string>
+    <integer name="pref_balance_default">1337</integer>
+    <string name="pref_last_bet_amount">last_bet_amount</string>
+    <string name="pref_last_bet_amount_default">42</string>
+    <string name="new_balance_amount">New Balance:</string>
+</resources>
